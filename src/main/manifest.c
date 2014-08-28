@@ -537,3 +537,9 @@ struct Command *CommandPtr()
   static struct Command command;
   return &command;
 }
+
+#ifdef ZVMSO
+struct ChannelDesc* GetChannel(struct Manifest *manifest, int index){
+    return g_ptr_array_index(manifest->channels, index);
+}
+#endif //ZVMSO

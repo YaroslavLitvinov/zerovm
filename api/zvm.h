@@ -91,6 +91,8 @@ struct UserManifest
 /* trap pointer. internal helper. DO NOT use it! */
 #define TRAP ((int32_t (*)(uint64_t*))0x10000)
 
+#ifndef ZVMSO
+
 /*
  * trap functions
  *
@@ -131,5 +133,7 @@ struct UserManifest
   TRAP((uint64_t[]){TrapPROT, (uintptr_t)buffer, size, prot})
 #define z_fork() TRAP((uint64_t[]){TrapFORK})
 #define z_exit(code) TRAP((uint64_t[]){TrapEXIT, code})
+
+#endif //ZVMSO
 
 #endif /* ZVM_API_H__ */

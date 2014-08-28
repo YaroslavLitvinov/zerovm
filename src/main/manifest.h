@@ -98,6 +98,10 @@ struct Manifest *ManifestCtor(const char *name);
 /* de-serialize manifest from the given text */
 struct Manifest *ManifestTextCtor(char *text);
 
+#ifdef ZVMSO
+struct ChannelDesc* GetChannel(struct Manifest *manifest, int index);
+#endif
+
 /*
  * release manifest resources. all elements initialized by another classes
  * must be deallocated by those classes

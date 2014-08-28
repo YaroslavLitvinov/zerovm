@@ -15,6 +15,9 @@
  */
 
 #include <assert.h>
+#ifdef ZVMSO
+#include <stdio.h>
+#endif
 #include "src/main/report.h"
 #include "src/main/setup.h"
 #include "src/main/zlog.h"
@@ -48,22 +51,22 @@ void ZLogTag(const char *file, int line)
   zfile = file;
 }
 
-#define ZLO(cond) \
-  char msg[LOG_MSG_LIMIT];\
-  int offset = 0;\
-  va_list ap;\
-\
-  if(cond) return;\
-\
-  /* construct log message */\
-  va_start(ap, fmt);\
-  if(zfile != NULL)\
-    offset = g_snprintf(msg, LOG_MSG_LIMIT, TAG_FORMAT, zfile, zline);\
-  g_vsnprintf(msg + offset, LOG_MSG_LIMIT - offset, fmt, ap);\
-  va_end(ap);\
-\
-  /* log the message */\
-  syslog(ZLOG_PRIORITY, "%s", msg);
+#define ZLO(cond)							\
+    char msg[LOG_MSG_LIMIT];						\
+    int offset = 0;							\
+    va_list ap;								\
+									\
+    if(cond) return;							\
+									\
+    /* construct log message */						\
+    va_start(ap, fmt);							\
+    if(zfile != NULL)							\
+	offset = g_snprintf(msg, LOG_MSG_LIMIT, TAG_FORMAT, zfile, zline); \
+    g_vsnprintf(msg + offset, LOG_MSG_LIMIT - offset, fmt, ap);		\
+    va_end(ap);								\
+									\
+    /* log the message */						\
+    syslog(ZLOG_PRIORITY, "%s", msg);
 
 void ZLog(int priority, char *fmt, ...)
 {
@@ -79,5 +82,10 @@ void LogIf(int cond, char const *fmt, ...)
 void FailIf(int cond, int err, char const *fmt, ...)
 {
   ZLO(!cond);
+#ifdef ZVMSO
+  fprintf(stderr, "%s\n", msg);
+  exit(1);
+#else
   SessionDtor(err, msg);
+#endif
 }

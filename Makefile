@@ -1,5 +1,6 @@
 PREFIX ?= /usr/local
 DESTDIR ?=
+LIBZVM=libzvm3.so
 FLAGS0=-fPIE -Wall -Wno-long-long -fvisibility=hidden -fstack-protector --param ssp-buffer-size=4
 GLIB=`pkg-config --cflags glib-2.0`
 TAG_ENCRYPTION ?= G_CHECKSUM_SHA1
@@ -18,18 +19,19 @@ all: CCFLAGS1 += -DNDEBUG -O2 -s
 all: CCFLAGS2 += -DNDEBUG -O2 -s
 all: CXXFLAGS1 := -DNDEBUG -O2 -s $(CXXFLAGS1)
 all: CXXFLAGS2 := -DNDEBUG -O2 -s $(CXXFLAGS2)
-all: create_dirs zerovm
+all: create_dirs zerovm $(LIBZVM)
 
 debug: CCFLAGS1 += -DDEBUG -g
 debug: CCFLAGS2 += -DDEBUG -g
 debug: CXXFLAGS1 := -DDEBUG -g $(CXXFLAGS1)
 debug: CXXFLAGS2 := -DDEBUG -g $(CXXFLAGS2)
-debug: create_dirs zerovm
+debug: create_dirs zerovm $(LIBZVM)
 	@printf "FUNCTIONAL TESTS %048o\n" 0
 	@./ftests.sh
 
 OBJS=obj/manifest.o obj/setup.o obj/channel.o obj/qualify.o obj/report.o obj/zlog.o obj/signal_common.o obj/signal.o obj/to_app.o obj/switch_to_app.o obj/to_trap.o obj/syscall_hook.o obj/prefetch.o obj/preload.o obj/context.o obj/trap.o obj/etag.o obj/accounting.o obj/daemon.o obj/snapshot.o obj/ztrace.o obj/userspace.o obj/usermap.o obj/serializer.o
-CC=@gcc
+#CC=@gcc
+CC=gcc
 CXX=@g++
 
 create_dirs:
@@ -37,6 +39,10 @@ create_dirs:
 
 zerovm: obj/zerovm.o $(OBJS)
 	$(CC) -o $@ $(CXXFLAGS2) $^ $(LIBS)
+
+$(LIBZVM): CCFLAGS1 = -c -g -m64 -fPIC -D_GNU_SOURCE -DTAG_ENCRYPTION=$(TAG_ENCRYPTION) -I. $(GLIB) -DZVMSO 
+$(LIBZVM): obj/manifest.o obj/zlog.o obj/etag.o obj/channel.o obj/prefetch.o obj/preload.o
+	$(CC) -shared -o $@ $(CXXFLAGS0) $^ -lglib-2.0 -lstdc++ -lpthread -lrt
 
 .PHONY: install
 

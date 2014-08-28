@@ -30,8 +30,8 @@
 #include <stdint.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <glib.h>
 #include <unistd.h>
+#include <glib.h>
 #include <sys/stat.h>
 
 /*
