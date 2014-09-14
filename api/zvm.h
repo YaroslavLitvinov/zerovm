@@ -74,7 +74,12 @@ struct ZVMChannel
 struct UserManifest
 {
   void *heap_ptr;
-  uint32_t heap_size;
+#ifdef ZVMSO
+  ssize_t
+#else
+  uint32_t 
+#endif //ZVMSO 
+  heap_size;
   uint32_t stack_size;
   int32_t channels_count;
 
